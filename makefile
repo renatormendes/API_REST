@@ -5,8 +5,8 @@ MAIN = Main
 SRC = src/Main.java
 BIN = out
 
-# Alvo padrão: compila e roda
-all: compile run
+# Alvo padrão: compila testa e roda
+all: compile test run
 
 compile:
 	mkdir -p $(BIN)
@@ -17,3 +17,7 @@ run:
 
 clean:
 	rm -rf $(BIN)
+
+test:
+	@chmod +x test_api.sh
+	@./test_api.sh
