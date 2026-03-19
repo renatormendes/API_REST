@@ -19,3 +19,5 @@ A decisão de não utilizar ferramentas de automação modernas como Maven ou Gr
 ```bash
 make        # Compila e inicia o servidor
 make clean  # Remove arquivos temporários
+
+FIQUE A VONTADE PARA DAR SUGESTÕES PARA MELHORIA!!!
