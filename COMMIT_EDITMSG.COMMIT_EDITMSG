@@ -1,0 +1,152 @@
+
+
+# --------------
+# Please enter the commit message for your changes. Everything below
+# this paragraph is ignored, and an empty message aborts the commit.
+# Just close the window to accept your message.
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..6e40f55
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,21 @@
++# Java Native REST API - Portfolio Manager
++
++Uma API RESTful de alta performance construída exclusivamente com o **JDK nativo**, sem a utilização de frameworks (Spring, Quarkus) ou gerenciadores de dependências (Maven, Gradle).
++
++## 🚀 O Diferencial deste Projeto
++A decisão de não utilizar ferramentas de automação modernas como Maven ou Gradle foi **proposital**. O objetivo é demonstrar domínio técnico sobre:
++- **Entranhas do Java:** Gerenciamento manual de Classpath, compilação via `javac` e estruturação de pacotes.
++- **Protocolo HTTP:** Implementação de Handlers, gerenciamento de Headers, Status Codes e Streams de entrada/saída (I/O) no nível do socket.
++- **Automação Unix:** Uso de `Makefile` e `Shell Script` para padronizar o ciclo de vida da aplicação (Build, Run, Clean).
++
++## 🛠️ Tecnologias
++- **Linguagem:** Java 11+ (com `com.sun.net.httpserver`)
++- **Build:** GNU Make / Bash Script
++- **Containerização:** Docker (Multi-stage build)
++
++## 📋 Como Rodar
++
++### Via Makefile (Local)
++```bash
++make        # Compila e inicia o servidor
++make clean  # Remove arquivos temporários
+diff --git a/build.sh b/build.sh
+new file mode 100755
+index 0000000..75ef252
+--- /dev/null
++++ b/build.sh
+@@ -0,0 +1,10 @@
++#!/bin/bash
++echo "Limpando..."
++rm -rf out
++mkdir out
++
++echo "Compilando..."
++javac -d out Main.java
++
++echo "Executando..."
++java -cp out Main
+diff --git a/makefile b/makefile
+new file mode 100644
+index 0000000..0e9bdfc
+--- /dev/null
++++ b/makefile
+@@ -0,0 +1,19 @@
++# Variáveis
++JC = javac
++JVM = java
++MAIN = Main
++SRC = src/Main.java
++BIN = out
++
++# Alvo padrão: compila e roda
++all: compile run
++
++compile:
++	mkdir -p $(BIN)
++	$(JC) -d $(BIN) $(SRC)
++
++run:
++	$(JVM) -cp $(BIN) $(MAIN)
++
++clean:
++	rm -rf $(BIN)
+diff --git a/out/Main.class b/out/Main.class
+new file mode 100644
+index 0000000..03b8657
+Binary files /dev/null and b/out/Main.class differ
+diff --git a/src/Main.java b/src/Main.java
+new file mode 100644
+index 0000000..79dc2df
+--- /dev/null
++++ b/src/Main.java
+@@ -0,0 +1,68 @@
++import com.sun.net.httpserver.HttpServer;
++import com.sun.net.httpserver.HttpHandler;
++import com.sun.net.httpserver.HttpExchange;
++
++import java.io.IOException;
++import java.io.OutputStream;
++import java.net.InetSocketAddress;
++import java.nio.charset.StandardCharsets;
++
++
++public class Main {
++
++	public static void main(String[] args) throws IOException {
++
++		int port = 8080;
++		HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
++
++		// Rota 1: Informações do Profissional
++		server.createContext("/api/perfil", exchange -> {
++
++			String json = "{\"nome\": \"seu Nome\", \"cargo\": \"Backend Developer\", \"techs\": [\"Java\", \"REST\", \"Docker\"]}";
++			sendResponse(exchange, json, 200);
++
++		});
++
++		// Rota 2: Lista de Projetos (Exemplo de filtragem por query param)
++		server.createContext("/api/projetos", exchange -> {
++
++			String query = exchange.getRequestURI().getQuery();
++			String response;
++
++			if (query != null && query.contains("status = finalizado")) {
++
++				response = "[{\"id\": 1, \"nome\": \"API Java Nativa\", \"status\": \"finalizado\"}]";
++
++			} else {
++
++				response = "[{\"id\": 1, \"nome\": \"API Java Nativa\"}, {\"id\": 2, \"nome\": \"Sistema de Vendas (Draft)\"}]";
++
++			}
++
++			sendResponse(exchange, response, 200);
++
++		});
++
++		server.setExecutor(null);
++		System.out.print("Portfólio API rodando em: http://localhost:" + port);
++		server.start();
++		
++	}
++
++	// Método auxiliar para evitar repetição de código (Clean Code)
++	private static void sendResponse (HttpExchange exchange, String response, int statusCode) throws IOException {
++
++		byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
++		exchange.getResponseHeaders().set("Content-Type", "application/json; charset = UTF-8");
++		exchange.sendResponseHeaders(statusCode, bytes.length);
++
++		try (OutputStream os = exchange.getResponseBody()) {
++
++			os.write(bytes);
++			os.flush();
++
++		}
++
++	}
++
++}
